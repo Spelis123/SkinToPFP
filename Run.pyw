@@ -22,7 +22,7 @@ def set_appwindow(window):
     stylew = stylew & ~WS_EX_TOOLWINDOW
     stylew = stylew | WS_EX_APPWINDOW
     res = windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, stylew)
-    # re-assert the new window style (e)
+    # re-assert the new window style
     window.wm_withdraw()
     window.after(10, lambda: window.wm_deiconify())
 
@@ -193,7 +193,7 @@ infoButton = tkinter.Button(
     width=2,
     height=1,
     master=titlebar,
-    command= lambda: messagebox.showinfo("Instructions",'Press the "Ctrl" and "E" key to minimize the application, to unminimize click the taskbar icon.\nTo close the application, simply press the "ESC" key \n\nPlease note that the "upload from pc" button doesnt work.\nTo download a skin or show their skin list type a minecraft username in the textbox above and then press the button to download or show list\n\nThe gear icon leads to the settings menu as you might have guessed, there you can change settings such as: \nenabling or disabling the Cache folder completely, \nhiding the Upload button, \nshowing the Exit and Minimize buttons (disabled and enabled separately) along with the instructions/help/info button where you are now.\n\nClick OK to continue')
+    command= lambda: messagebox.showinfo("Instructions",'Press the "Ctrl" and "E" key to minimize the application, to unminimize click the taskbar icon.\nTo close the application, simply press the "ESC" key \n\nPlease note that the "upload from pc" button doesnt work.\nTo download a skin or show their skin list type a minecraft username in the textbox above and then press the button to download or show list\n\nThe gear icon leads to the settings menu as you might have guessed, there you can change settings such as: \nenabling or disabling the Cache folder completely, \nhiding the Upload button, \nshowing the Exit and Minimize buttons (disabled and enabled separately) along with the instructions/help/info button where you are now.\n\nClick OK to continue\n\nProgram made by spelis, please do not copy as your own.')
 )
 infoButton.place(x=300,y=-10)
 settingsButton = tkinter.Button(
@@ -203,6 +203,8 @@ settingsButton = tkinter.Button(
     bd=0,
     command=switchToSettings,
     master=mainframe,
+    width=27,
+    height=27
 ).place(x=300,y=155)
 backtomainButton = tkinter.Button(
     image=backimg,
@@ -211,6 +213,8 @@ backtomainButton = tkinter.Button(
     bd=0,
     command=switchToMain,
     master=settingsframe,
+    width=27,
+    height=27
 ).place(x=300,y=155)
 upload = tkinter.Button(
     image=pc,
