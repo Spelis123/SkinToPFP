@@ -185,7 +185,7 @@ titlebartext = tkinter.Label(
 )
 titlebartext.place(x=2,y=0)
 infoButton = tkinter.Button(
-    text="i",
+    text="?",
     font=("Minecraft",16),
     bg="#c6c6c6",
     activebackground="#e7e7e7",
