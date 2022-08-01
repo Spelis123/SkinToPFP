@@ -22,7 +22,7 @@ def set_appwindow(window):
     stylew = stylew & ~WS_EX_TOOLWINDOW
     stylew = stylew | WS_EX_APPWINDOW
     res = windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, stylew)
-    # re-assert the new window style
+    # re-assert the new window style (e)
     window.wm_withdraw()
     window.after(10, lambda: window.wm_deiconify())
 
