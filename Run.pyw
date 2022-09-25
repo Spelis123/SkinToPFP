@@ -1,9 +1,13 @@
 import tkinter
 from tkinter import filedialog, messagebox
 from ctypes import windll
-import requests, urllib, PIL, webbrowser, os, time, base64
+import requests, urllib, PIL, webbrowser, os, time, base64, subprocess
 from tkinter.filedialog import askopenfilename
 from PIL import ImageTk, Image
+from tktooltip import ToolTip as tp
+
+
+
 checkifcachefolderexist = os.path.exists("./Cache")
 if checkifcachefolderexist == False:
     os.mkdir("Cache")
@@ -56,29 +60,14 @@ def ignoreme():
             time.sleep(0.1)
             print(window.attributes("-alpha"))
 def quitlol():
-    #settingsfile = open("Settings.txt","w")
-    #settingsfile.write(str(int(showuploadcheckvar.get())) + "\n" + str(int(showXcheckvar.get())))
-    #settingsfile.close()
     window.destroy()
     quit()
 def minimizelol():
-    global z#,minimized
-    #if not minimized:
+    global z
     window.state("withdrawn")
     window.overrideredirect(0)
     window.state("iconic")
-#    minimized = 1
     z = 1
-#    else:
-#        unminimizelol()
-#    time.sleep(0.1)
-#def unminimizelol():
-#    global z,minimized
-#    window.state("withdrawn")
-#    window.overrideredirect(1)
-#    window.state("iconic")
-#    minimized = 0
-#    z = 0
 def frameMapped(event=None):
     global z
     window.overrideredirect(True)
@@ -137,15 +126,21 @@ pc = tkinter.PhotoImage(file="assets/pc.png")
 dl = tkinter.PhotoImage(file="assets/dl.png")
 nm = tkinter.PhotoImage(file="assets/nmsl.png")
 settingsimg = tkinter.PhotoImage(file="assets/settings.png")
+helpimg = tkinter.PhotoImage(file="assets/help.png")
 backimg = tkinter.PhotoImage(file="assets/back.png")
 def switchToSettings():
     titlebartext.config(text="Settings")
     mainframe.config(width=0)
     settingsframe.config(width=330)
+def switchToHow():
+    titlebartext.config(text="How To Use?")
+    mainframe.config(width=0)
+    howframe.config(width=330)
 def switchToMain():
     titlebartext.config(text=window.wm_title())
     mainframe.config(width=330)
     settingsframe.config(width=0)
+    howframe.config(width=0)
     window.update()
 backgroundcanvas = tkinter.Label(
     image=bglol,
@@ -162,6 +157,8 @@ mainframe = tkinter.Frame(bg="#c6c6c6",width=330,height=185)
 mainframe.place(x=6,y=39)
 settingsframe = tkinter.Frame(bg="#c6c6c6",width=0,height=185) # TODO: set width to 330 when showing
 settingsframe.place(x=6,y=39)
+howframe = tkinter.Frame(bg="#c6c6c6",width=0,height=185) # TODO: set width to 330 when showing
+howframe.place(x=6,y=39)
 text1 = tkinter.Label(
     text="Local:",
     font=("Minecraft",15),
@@ -185,17 +182,16 @@ titlebartext = tkinter.Label(
 )
 titlebartext.place(x=2,y=0)
 infoButton = tkinter.Button(
-    text="?",
-    font=("Minecraft",16),
+    image=helpimg,
     bg="#c6c6c6",
     activebackground="#e7e7e7",
     bd=0,
-    width=2,
-    height=1,
-    master=titlebar,
-    command= lambda: messagebox.showinfo("Instructions",'Press the "Ctrl" and "E" key to minimize the application, to unminimize click the taskbar icon.\nTo close the application, simply press the "ESC" key \n\nPlease note that the "upload from pc" button doesnt work.\nTo download a skin or show their skin list type a minecraft username in the textbox above and then press the button to download or show list\n\nThe gear icon leads to the settings menu as you might have guessed, there you can change settings such as: \nenabling or disabling the Cache folder completely, \nhiding the Upload button, \nshowing the Exit and Minimize buttons (disabled and enabled separately) along with the instructions/help/info button where you are now.\n\nClick OK to continue\n\nProgram made by spelis, please do not copy as your own.')
+    master=mainframe,
+    command=switchToHow,  #messagebox.showinfo("Instructions",'Press the "Ctrl" and "E" key to minimize the application, to unminimize click the taskbar icon.\nTo close the application, simply press the "ESC" key \n\nPlease note that the "upload from pc" button doesnt work.\nTo download a skin or show their skin list type a minecraft username in the textbox above and then press the button to download or show list\n\nThe gear icon leads to the settings menu as you might have guessed, there you can change settings such as: \nenabling or disabling the Cache folder completely, \nhiding the Upload button, \nshowing the Exit and Minimize buttons (disabled and enabled separately) along with the instructions/help/info button where you are now.\n\nClick OK to continue\n\nProgram made by spelis, please do not copy as your own.')
+    width=27,
+    height=27
 )
-infoButton.place(x=300,y=-10)
+infoButton.place(x=270,y=155)
 settingsButton = tkinter.Button(
     image=settingsimg,
     bg="#c6c6c6",
@@ -216,6 +212,16 @@ backtomainButton = tkinter.Button(
     width=27,
     height=27
 ).place(x=300,y=155)
+backtomainButton = tkinter.Button(
+    image=backimg,
+    bg="#c6c6c6",
+    activebackground="#e7e7e7",
+    bd=0,
+    command=switchToMain,
+    master=howframe,
+    width=27,
+    height=27
+).place(x=300,y=155)
 upload = tkinter.Button(
     image=pc,
     bd=0,
@@ -223,6 +229,24 @@ upload = tkinter.Button(
     master=mainframe,
 )
 online = tkinter.Entry(
+    width=21,
+    bg="Black",
+    highlightthickness=1,
+    highlightbackground="White",
+    font="Minecraft",
+    fg="white",
+    master=mainframe,
+)
+online2 = tkinter.Entry(
+    width=21,
+    bg="Black",
+    highlightthickness=1,
+    highlightbackground="White",
+    font="Minecraft",
+    fg="white",
+    master=mainframe,
+)
+offline = tkinter.Entry(
     width=21,
     bg="Black",
     highlightthickness=1,
@@ -243,50 +267,60 @@ showlist = tkinter.Button(
     command=openlist,
     master=mainframe,
 )
+howtouse = tkinter.Label(
+    text='Press the "Ctrl" and "E" key to\nminimize the application,to\nunminimize click the taskbar\nicon. To close the application,\nsimply press the "ESC" key',
+    master=howframe,
+    justify="left",
+    font=("Minecraft",15),
+    bg="#c6c6c6"
+).place(x=5,y=0)
 previewcheck = tkinter.IntVar()
 openfilecheckbox = tkinter.Checkbutton(
-    bg="#717171",
-    activebackground="#717171",
+    text="Open In Image Editor?",
+    bg="#c6c6c6",
+    activebackground="#c6c6c6",
     font=("Minecraft",11),
     variable=previewcheck,
     foreground="black",
     height=1,
     master=mainframe,
 )
-showuploadcheckvar = tkinter.BooleanVar()
-#settings_get = open("Settings.txt","r")
-#settings_gotten = bool(settings_get.readline(0))
-#print(str(settings_gotten))
-#settings_get.close()
-showuploadcheckvar.set(True)
-showuploadbutton = tkinter.Checkbutton(
-    text="Show Upload Button",
-    variable=showuploadcheckvar,
-    font="Minecraft",
-    master=settingsframe,
-    bg="#c6c6c6",
-    activebackground="#c6c6c6",
-    command= lambda: ((text1.place(x=4, y=-1), upload.place(x=4, y=25),openfilecheckbox.place(x=99,y=110),text2.place(x=4, y=56),online.place(x=4,y=83),showlist.place(x=4,y=142),download.place(x=4,y=108)) if showuploadcheckvar.get() else (text1.place_forget(), upload.place_forget(),openfilecheckbox.place(x=99,y=52),text2.place(x=4, y=-1),online.place(x=4,y=25),download.place(x=4,y=50),showlist.place(x=4,y=85)))
-)
-showuploadbutton.place(x=4,y=0)
-showXcheckvar = tkinter.BooleanVar()
-#settings1_get = open("Settings.txt","r")
-#settings1_gotten = bool(settings1_get.readline(1))
-#print(str(settings1_gotten))
-#settings1_get.close()
-showXcheckvar.set(False)
-showXbutton = tkinter.Checkbutton(
-    text='Show Quit and Minimize Buttons',
-    variable=showXcheckvar,
-    font="Minecraft",
-    master=settingsframe,
-    bg="#c6c6c6",
-    activebackground="#c6c6c6",
-    command= lambda: ((infoButton.place(x=300,y=-10)) if showXcheckvar.get() else (infoButton.place(x=300,y=-10)))
-)
-showXbutton.place(x=4,y=30)
+DownloadTip = tp(download,"Download\n\nClick To Download Skin",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+        fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
+NMCTip = tp(showlist,"NameMC\n\nShow NameMC Profile For This User",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+        fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
+UploadTip = tp(upload,"Upload\n\nUpload From PC Using File Explorer",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+        fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
+UploadPathTip = tp(offline,"Skin Texture File Path\n\nEnter Path To Skin Texture",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+        fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
+MinecraftUserTip = tp(online,"Minecraft Username\n\nEnter Minecraft Username (Any Valid One) To Download It \nOtherwise It'll Just Give You A Normal Steve Skin.",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+        fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
+SkinlinkTip = tp(online2,"Image Link\n\nEnter The Link To Any Image And I'll Try To Make A Profile Picture For You.",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+        fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
+settings_get = open("assets/Settings.txt","r")
+settings_gotten = 1# (settings_get.read())
+print(str(settings_gotten))
 
-(text1.place(x=4, y=-1), upload.place(x=4, y=25),openfilecheckbox.place(x=99,y=110),text2.place(x=4, y=56),online.place(x=4,y=83),showlist.place(x=4,y=142),download.place(x=4,y=108)) if showuploadcheckvar.get() else (text1.place_forget(), upload.place_forget(),openfilecheckbox.place(x=99,y=52),text2.place(x=4, y=-1),online.place(x=4,y=25),download.place(x=4,y=50),showlist.place(x=4,y=85))
+settings1_gotten = 0# (settings_get.read())
+s1_g = str(settings1_gotten)
+print(s1_g)
+settings_get.close()
+
+(text1.place(x=4, y=-1),
+ upload.place(x=4, y=25),
+ openfilecheckbox.place(x=5,y=150),
+ text2.place(x=4, y=56),
+ online.place(x=4,y=83),
+ online2.place(x=4,y=110),
+ offline.place(x=54,y=32),
+ showlist.place(x=267,y=76),
+ download.place(x=230,y=76)
+ ) if settings_gotten == 1 else (text1.place_forget(),
+  upload.place_forget(),
+  openfilecheckbox.place(x=99,y=52),
+  text2.place(x=4, y=-1),
+  online.place(x=4,y=25),download.place(x=4,y=50),
+  showlist.place(x=4,y=85))
 
 window.bind("<Control-e>", lambda i : minimizelol())
 window.bind("<Escape>", lambda i : quitlol())
@@ -294,7 +328,5 @@ titlebar.bind("<ButtonPress-1>", StartMove)
 titlebar.bind("<ButtonRelease-1>", StopMove)
 titlebar.bind("<B1-Motion>", OnMotion)
 window.bind("<Map>", frameMapped)
-#window.bind("<Leave>", lambda i : stopignoringme())
-#window.bind("<Enter>", lambda i : ignoreme())
 
 window.mainloop()
