@@ -1,12 +1,14 @@
 import tkinter
 from tkinter import filedialog, messagebox
 from ctypes import windll
-import requests, urllib, PIL, webbrowser, os, time, base64, subprocess
+import requests, urllib, PIL, webbrowser, os, time, base64, subprocess, winreg, tkinter.ttk
 from tkinter.filedialog import askopenfilename
 from PIL import ImageTk, Image
 from tktooltip import ToolTip as tp
 
+access_registry = winreg.ConnectRegistry(None,winreg.HKEY_LOCAL_MACHINE)
 
+access_key = winreg.OpenKey(access_registry,r"SOFTWARE\Microsoft\Windows\CurrentVersion")
 
 checkifcachefolderexist = os.path.exists("./Cache")
 if checkifcachefolderexist == False:
@@ -89,16 +91,19 @@ def OnMotion(event):
 def openlist():
     if not online.get() == "":
         webbrowser.open("https://namemc.com/profile/" + online.get())
+def skindexid():
+    if not online2.get() == "":
+        webbrowser.open("https://www.minecraftskins.com/skin/" + online2.get() + "/e/")
 def uploadfrompc():
-    pass
-    #localskinimage = askopenfilename(title="Select Skin:",filetypes=[('Image Files', '*.png')])
-    #file = open(localskinimage, "rb")
-    #contentlol = file.read()
-    #cachelol = open("skinout.png", "wb")
-    #cachelol.write(contentlol)
-    #file.close()
-    #print(cachelol)
-    #messagebox.showinfo("Saved!","PFP Saved!")
+    localskinimage = askopenfilename(title="Select Skin:",filetypes=[('Image Files', '*.png')])
+    file = open(localskinimage, "rb")
+    contentlol = file.read()
+    cachelol = open("skinout.png", "wb")
+    cachelol.write(contentlol)
+    file.close()
+    print(cachelol)
+    print(contentlol)
+    messagebox.showinfo("Saved!","PFP Saved!")
 def downloadfromweb():
     global skinimage,outputskin
     skinimage = requests.get("https://minecraft.tools/download-skin/" + online.get())
@@ -212,16 +217,8 @@ backtomainButton = tkinter.Button(
     width=27,
     height=27
 ).place(x=300,y=155)
-backtomainButton = tkinter.Button(
-    image=backimg,
-    bg="#c6c6c6",
-    activebackground="#e7e7e7",
-    bd=0,
-    command=switchToMain,
-    master=howframe,
-    width=27,
-    height=27
-).place(x=300,y=155)
+
+
 upload = tkinter.Button(
     image=pc,
     bd=0,
@@ -229,7 +226,7 @@ upload = tkinter.Button(
     master=mainframe,
 )
 online = tkinter.Entry(
-    width=21,
+    width=16,
     bg="Black",
     highlightthickness=1,
     highlightbackground="White",
@@ -238,7 +235,7 @@ online = tkinter.Entry(
     master=mainframe,
 )
 online2 = tkinter.Entry(
-    width=21,
+    width=16,
     bg="Black",
     highlightthickness=1,
     highlightbackground="White",
@@ -255,6 +252,33 @@ offline = tkinter.Entry(
     fg="white",
     master=mainframe,
 )
+tOD = tkinter.StringVar()
+tOD.set("Link")
+
+tODlol = tkinter.OptionMenu(mainframe, tOD, "The Skindex", "NovaSkin", "Link")
+tODlol.place(x=5,y=150)
+
+howtotabs = tkinter.ttk.Notebook(howframe, height=185,width=330)
+howtotabs.place(x=0,y=0)#185 330
+
+PlanetMC = tkinter.Frame(howtotabs,bg="#c6c6c6")
+VK = tkinter.Frame(howtotabs,bg="#c6c6c6")
+
+howtotabs.add(PlanetMC,text="Planet Minecraft Skin Downloading")
+howtotabs.add(VK,text="Visibility Controls")
+
+backtomainButton2 = tkinter.Button(
+    image=backimg,
+    bg="#c6c6c6",
+    activebackground="#e7e7e7",
+    bd=0,
+    command=switchToMain,
+    master=howframe,
+    width=27,
+    height=27,
+)
+backtomainButton2.place(x=300,y=155)
+
 download = tkinter.Button(
     image=dl,
     bd=0,
@@ -269,14 +293,14 @@ showlist = tkinter.Button(
 )
 howtouse = tkinter.Label(
     text='Press the "Ctrl" and "E" key to\nminimize the application,to\nunminimize click the taskbar\nicon. To close the application,\nsimply press the "ESC" key',
-    master=howframe,
-    justify="left",
+    master=VK,
+    justify="center",
     font=("Minecraft",15),
     bg="#c6c6c6"
 ).place(x=5,y=0)
 previewcheck = tkinter.IntVar()
 openfilecheckbox = tkinter.Checkbutton(
-    text="Open In Image Editor?",
+    text="",
     bg="#c6c6c6",
     activebackground="#c6c6c6",
     font=("Minecraft",11),
@@ -295,7 +319,11 @@ UploadPathTip = tp(offline,"Skin Texture File Path\n\nEnter Path To Skin Texture
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
 MinecraftUserTip = tp(online,"Minecraft Username\n\nEnter Minecraft Username (Any Valid One) To Download It \nOtherwise It'll Just Give You A Normal Steve Skin.",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
-SkinlinkTip = tp(online2,"Image Link\n\nEnter The Link To Any Image And I'll Try To Make A Profile Picture For You.",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+SkinlinkTip = tp(online2,"Image Link\n\nEnter The Link To Any Image And I'll Try To Make A Profile Picture For You.\nPlease Also Make Sure It Is A Direct Download (No Need To Click Buttons To Get There)",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+        fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
+PreviewTip = tp(openfilecheckbox,"Open In Image Editor On Download?\n\nWhen Clicking The Download Button I Will\nOpen The Image In Your Default Image Viewer/Editor",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+        fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
+PreviewTip = tp(tODlol,"Link Type\n\nWhat Type Of Link Is This? Is It Just A Normal Link Or Is It\nSomething Else?\n\nClick The Popup Below And Select A",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
 settings_get = open("assets/Settings.txt","r")
 settings_gotten = 1# (settings_get.read())
@@ -306,21 +334,15 @@ s1_g = str(settings1_gotten)
 print(s1_g)
 settings_get.close()
 
-(text1.place(x=4, y=-1),
- upload.place(x=4, y=25),
- openfilecheckbox.place(x=5,y=150),
- text2.place(x=4, y=56),
- online.place(x=4,y=83),
- online2.place(x=4,y=110),
- offline.place(x=54,y=32),
- showlist.place(x=267,y=76),
- download.place(x=230,y=76)
- ) if settings_gotten == 1 else (text1.place_forget(),
-  upload.place_forget(),
-  openfilecheckbox.place(x=99,y=52),
-  text2.place(x=4, y=-1),
-  online.place(x=4,y=25),download.place(x=4,y=50),
-  showlist.place(x=4,y=85))
+text1.place(x=4, y=-1)
+upload.place(x=4, y=25)
+openfilecheckbox.place(x=150,y=150)
+text2.place(x=4, y=56)
+online.place(x=4,y=83)
+online2.place(x=4,y=110)
+offline.place(x=54,y=32)
+showlist.place(x=267,y=83)
+download.place(x=200,y=83)
 
 window.bind("<Control-e>", lambda i : minimizelol())
 window.bind("<Escape>", lambda i : quitlol())
@@ -330,3 +352,4 @@ titlebar.bind("<B1-Motion>", OnMotion)
 window.bind("<Map>", frameMapped)
 
 window.mainloop()
+print(tOD.get())
