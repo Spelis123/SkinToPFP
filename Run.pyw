@@ -1,12 +1,10 @@
 import tkinter
 from tkinter import filedialog, messagebox
 from ctypes import windll
-import requests, urllib, PIL, webbrowser, os, time, base64, subprocess, tkinter.ttk, io
+import requests, urllib, PIL, webbrowser, os, time, base64, subprocess, tkinter.ttk, io, datetime
 from tkinter.filedialog import askopenfilename
 from PIL import ImageTk, Image
 from tktooltip import ToolTip as tp
-
-import subprocess
 
 keyPath = "\\Dator\\HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion"
 output = subprocess.run(["reg", 
@@ -100,11 +98,21 @@ def openlist():
     if not online.get() == "":
         webbrowser.open("https://namemc.com/profile/" + online.get())
 def skindexid():
-    if tOD.get() == "The Skindex":
-        if not online2.get() == "":
-            webbrowser.open("https://www.minecraftskins.com/skin/" + online2.get() + "/e/") 
+    webbrowser.open("https://www.minecraftskins.com/skin/" + online2.get() + "/e/") 
 def dllinklol():
-    pass
+    if tOD.get() == "The Skindex":
+        skindexid()
+    else:
+        skinimage = requests.get(online2.get())
+        file = open("skinout.png", "wb")
+        file.write(skinimage.content)
+        if previewcheck.get() == 1:
+            os.startfile("skinout.png")
+        file.close()
+        file2 = open("Cache/Skins/SkinFromLink" + ".png", "wb")
+        file2.write(skinimage.content)
+        file2.close()
+    messagebox.showinfo("Saved!","Skin Saved!")
 def uploadfrompc():
     localskinimage = askopenfilename(title="Select Skin:",filetypes=[('Image Files', '*.png')])
     file = open(localskinimage, "rb")
@@ -130,7 +138,6 @@ def downloadfromweb():
     #    head1 = outputskin.crop(5,8,15,15)
 class WebImage:
     def __init__(self, url, resize=False, sizex=0, sizey=0):
-        print(url)
         with urllib.request.urlopen(url) as u:
             raw_data = u.read()
         image = Image.open(io.BytesIO(raw_data))
@@ -150,30 +157,17 @@ window.overrideredirect(1)
 window.state("normal")
 z = 1
 
-style = tkinter.ttk.Style()
-style.theme_create("Spelis")
-style.configure("Custom.TNotebook",
-    foreground="#3f3f3f",
-    background="#c6c6c6",
-    font="Minecraft 15",
-    bordercolor="#c6c6c6")
-style.configure("Custom.TNotebook.Tab",
-    foreground="#c6c6c6",
-    background=["#555555","#555555","#444444"],
-    font="Minecraft 8")
-
-style.theme_use("Spelis")
-
-bglol = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/bg.png", False, 0, 0)
-pc = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/pc.png", False, 0, 0)
-dl = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/dl.png", False, 0, 0)
-#dllink = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/dllink.png", False, 0, 0)
-nm = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/nmsl.png", False, 0, 0)
-settingsimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/settings.png", False, 0, 0)
-helpimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/help.png", False, 0, 0)
-backimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/back.png", False, 0, 0)
+bglol = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/bg.png").get()
+pc = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/pc.png").get()
+dl = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/dl.png").get()
+dllink = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/dllink.png").get()
+nm = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/nmsl.png").get()
+settingsimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/settings.png").get()
+helpimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/help.png").get()
+backimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/back.png").get()
 pmc = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/downloadpmcskin.png",True,172,111).get()
 logoicon = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/icon.png",True,28,30).get()
+
 def switchToSettings():
     titlebartext.config(text="Settings")
     mainframe.config(width=0)
@@ -303,7 +297,7 @@ tOD.set("Link")
 tODlol = tkinter.OptionMenu(mainframe, tOD, "The Skindex", "NovaSkin", "Link")
 tODlol.place(x=5,y=150)
 
-howtotabs = tkinter.ttk.Notebook(howframe, height=185,width=330,style="Custom.TNotebook")
+howtotabs = tkinter.ttk.Notebook(howframe, height=185,width=330)
 howtotabs.place(x=0,y=0)#185 330
 
 
