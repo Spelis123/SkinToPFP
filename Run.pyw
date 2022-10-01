@@ -1,14 +1,22 @@
 import tkinter
 from tkinter import filedialog, messagebox
 from ctypes import windll
-import requests, urllib, PIL, webbrowser, os, time, base64, subprocess, winreg, tkinter.ttk
+import requests, urllib, PIL, webbrowser, os, time, base64, subprocess, tkinter.ttk, io
 from tkinter.filedialog import askopenfilename
 from PIL import ImageTk, Image
 from tktooltip import ToolTip as tp
 
-access_registry = winreg.ConnectRegistry(None,winreg.HKEY_LOCAL_MACHINE)
+import subprocess
 
-access_key = winreg.OpenKey(access_registry,r"SOFTWARE\Microsoft\Windows\CurrentVersion")
+keyPath = "\\Dator\\HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion"
+output = subprocess.run(["reg", 
+                 "query",
+                 keyPath,
+                 "/v",
+                 "BuildLabEx"], 
+               capture_output=True,
+               text=True)
+print(output.stdout)
 
 checkifcachefolderexist = os.path.exists("./Cache")
 if checkifcachefolderexist == False:
@@ -92,8 +100,11 @@ def openlist():
     if not online.get() == "":
         webbrowser.open("https://namemc.com/profile/" + online.get())
 def skindexid():
-    if not online2.get() == "":
-        webbrowser.open("https://www.minecraftskins.com/skin/" + online2.get() + "/e/")
+    if tOD.get() == "The Skindex":
+        if not online2.get() == "":
+            webbrowser.open("https://www.minecraftskins.com/skin/" + online2.get() + "/e/") 
+def dllinklol():
+    pass
 def uploadfrompc():
     localskinimage = askopenfilename(title="Select Skin:",filetypes=[('Image Files', '*.png')])
     file = open(localskinimage, "rb")
@@ -101,8 +112,6 @@ def uploadfrompc():
     cachelol = open("skinout.png", "wb")
     cachelol.write(contentlol)
     file.close()
-    print(cachelol)
-    print(contentlol)
     messagebox.showinfo("Saved!","PFP Saved!")
 def downloadfromweb():
     global skinimage,outputskin
@@ -119,6 +128,20 @@ def downloadfromweb():
     messagebox.showinfo("Saved!","Skin Saved!")
 #def croptheimage():
     #    head1 = outputskin.crop(5,8,15,15)
+class WebImage:
+    def __init__(self, url, resize=False, sizex=0, sizey=0):
+        print(url)
+        with urllib.request.urlopen(url) as u:
+            raw_data = u.read()
+        image = Image.open(io.BytesIO(raw_data))
+        if resize == True:
+            image2 = image.resize((sizex,sizey))
+            self.image = ImageTk.PhotoImage(image2)
+        else:
+            self.image = ImageTk.PhotoImage(image)
+
+    def get(self):
+        return self.image
 window.title("Skin Stealer")
 window.geometry("342x232+100+100")
 window.attributes("-transparentcolor","purple")
@@ -126,13 +149,31 @@ window.state("iconic")
 window.overrideredirect(1)
 window.state("normal")
 z = 1
-bglol = tkinter.PhotoImage(file="assets/bg.png")
-pc = tkinter.PhotoImage(file="assets/pc.png")
-dl = tkinter.PhotoImage(file="assets/dl.png")
-nm = tkinter.PhotoImage(file="assets/nmsl.png")
-settingsimg = tkinter.PhotoImage(file="assets/settings.png")
-helpimg = tkinter.PhotoImage(file="assets/help.png")
-backimg = tkinter.PhotoImage(file="assets/back.png")
+
+style = tkinter.ttk.Style()
+style.theme_create("Spelis")
+style.configure("Custom.TNotebook",
+    foreground="#3f3f3f",
+    background="#c6c6c6",
+    font="Minecraft 15",
+    bordercolor="#c6c6c6")
+style.configure("Custom.TNotebook.Tab",
+    foreground="#c6c6c6",
+    background=["#555555","#555555","#444444"],
+    font="Minecraft 8")
+
+style.theme_use("Spelis")
+
+bglol = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/bg.png", False, 0, 0)
+pc = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/pc.png", False, 0, 0)
+dl = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/dl.png", False, 0, 0)
+#dllink = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/dllink.png", False, 0, 0)
+nm = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/nmsl.png", False, 0, 0)
+settingsimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/settings.png", False, 0, 0)
+helpimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/help.png", False, 0, 0)
+backimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/back.png", False, 0, 0)
+pmc = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/downloadpmcskin.png",True,172,111).get()
+logoicon = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/icon.png",True,28,30).get()
 def switchToSettings():
     titlebartext.config(text="Settings")
     mainframe.config(width=0)
@@ -154,10 +195,10 @@ backgroundcanvas = tkinter.Label(
 ).place(x=-2,y=-2)
 titlebar = tkinter.Frame(
     bg="#c6c6c6",
-    width=326,
+    width=324,
     height=40
 )
-titlebar.place(x=8,y=6)
+titlebar.place(x=10,y=6)
 mainframe = tkinter.Frame(bg="#c6c6c6",width=330,height=185)
 mainframe.place(x=6,y=39)
 settingsframe = tkinter.Frame(bg="#c6c6c6",width=0,height=185) # TODO: set width to 330 when showing
@@ -185,7 +226,12 @@ titlebartext = tkinter.Label(
     master=titlebar,
     fg="#3F3F3F",
 )
-titlebartext.place(x=2,y=0)
+titlebartext.place(x=32,y=0)
+titlebaricon = tkinter.Label(
+    image=logoicon,
+    master=titlebar,
+    bg="#c6c6c6",
+).place(x=0,y=0)
 infoButton = tkinter.Button(
     image=helpimg,
     bg="#c6c6c6",
@@ -217,13 +263,12 @@ backtomainButton = tkinter.Button(
     width=27,
     height=27
 ).place(x=300,y=155)
-
-
 upload = tkinter.Button(
     image=pc,
     bd=0,
     command=uploadfrompc,
     master=mainframe,
+    bg="#c6c6c6"
 )
 online = tkinter.Entry(
     width=16,
@@ -258,14 +303,25 @@ tOD.set("Link")
 tODlol = tkinter.OptionMenu(mainframe, tOD, "The Skindex", "NovaSkin", "Link")
 tODlol.place(x=5,y=150)
 
-howtotabs = tkinter.ttk.Notebook(howframe, height=185,width=330)
+howtotabs = tkinter.ttk.Notebook(howframe, height=185,width=330,style="Custom.TNotebook")
 howtotabs.place(x=0,y=0)#185 330
+
 
 PlanetMC = tkinter.Frame(howtotabs,bg="#c6c6c6")
 VK = tkinter.Frame(howtotabs,bg="#c6c6c6")
 
-howtotabs.add(PlanetMC,text="Planet Minecraft Skin Downloading")
+howtotabs.add(PlanetMC,text="PMC Skin Downloading")
 howtotabs.add(VK,text="Visibility Controls")
+
+dlpmcs = tkinter.Label(PlanetMC,
+    image=pmc,
+    bg="#c6c6c6"
+).place(x=0,y=0)
+dlpmcs2 = tkinter.Label(PlanetMC,
+    text="Go to any PlanetMinecraft\nskin and RIGHT CLICK the\ndownload skin button, then\n'Copy Link'. Now you can\npaste it in the link input\nand it will download the\nskin succesfully.",
+    font=("Minecraft",8),
+    bg="#c6c6c6",
+).place(x=176,y=0)
 
 backtomainButton2 = tkinter.Button(
     image=backimg,
@@ -284,12 +340,21 @@ download = tkinter.Button(
     bd=0,
     command=downloadfromweb,
     master=mainframe,
+    bg="#c6c6c6"
+)
+download2 = tkinter.Button(
+    image=dllink,
+    bd=0,
+    command=dllinklol,
+    master=mainframe,
+    bg="#c6c6c6"
 )
 showlist = tkinter.Button(
     image=nm,
     bd=0,
     command=openlist,
     master=mainframe,
+    bg="#c6c6c6"
 )
 howtouse = tkinter.Label(
     text='Press the "Ctrl" and "E" key to\nminimize the application,to\nunminimize click the taskbar\nicon. To close the application,\nsimply press the "ESC" key',
@@ -309,7 +374,7 @@ openfilecheckbox = tkinter.Checkbutton(
     height=1,
     master=mainframe,
 )
-DownloadTip = tp(download,"Download\n\nClick To Download Skin",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+DownloadTip = tp(download,"Download\n\nDownloads Skin From Minecraft",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
 NMCTip = tp(showlist,"NameMC\n\nShow NameMC Profile For This User",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
@@ -323,16 +388,11 @@ SkinlinkTip = tp(online2,"Image Link\n\nEnter The Link To Any Image And I'll Try
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
 PreviewTip = tp(openfilecheckbox,"Open In Image Editor On Download?\n\nWhen Clicking The Download Button I Will\nOpen The Image In Your Default Image Viewer/Editor",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
-PreviewTip = tp(tODlol,"Link Type\n\nWhat Type Of Link Is This? Is It Just A Normal Link Or Is It\nSomething Else?\n\nClick The Popup Below And Select A",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+LinkTypeTip = tp(tODlol,"Link Type\n\nWhat Type Of Link Is This? Is It Just A Normal Link Or Is It\nSomething Else?\n\nClick The Popup Below And Select A Link Type e.x: Planet Minecraft Skin Link",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
-settings_get = open("assets/Settings.txt","r")
-settings_gotten = 1# (settings_get.read())
-print(str(settings_gotten))
+DlLinkTip = tp(download2,"Download (Web)\n\nDownloads Skin From A Link",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+        fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
 
-settings1_gotten = 0# (settings_get.read())
-s1_g = str(settings1_gotten)
-print(s1_g)
-settings_get.close()
 
 text1.place(x=4, y=-1)
 upload.place(x=4, y=25)
@@ -341,8 +401,9 @@ text2.place(x=4, y=56)
 online.place(x=4,y=83)
 online2.place(x=4,y=110)
 offline.place(x=54,y=32)
-showlist.place(x=267,y=83)
-download.place(x=200,y=83)
+showlist.place(x=254,y=83)
+download.place(x=180,y=83)
+download2.place(x=217,y=83)
 
 window.bind("<Control-e>", lambda i : minimizelol())
 window.bind("<Escape>", lambda i : quitlol())
@@ -352,4 +413,3 @@ titlebar.bind("<B1-Motion>", OnMotion)
 window.bind("<Map>", frameMapped)
 
 window.mainloop()
-print(tOD.get())
