@@ -1,20 +1,18 @@
 import tkinter
 from tkinter import filedialog, messagebox
 from ctypes import windll
-import requests, urllib, PIL, webbrowser, os, time, base64, subprocess, tkinter.ttk, io, datetime
+import requests, urllib, PIL, webbrowser, os, time, base64, subprocess, tkinter.ttk, io, datetime, winreg as wr
 from tkinter.filedialog import askopenfilename
 from PIL import ImageTk, Image
 from tktooltip import ToolTip as tp
 
-keyPath = "\\Dator\\HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion"
-output = subprocess.run(["reg", 
-                 "query",
-                 keyPath,
-                 "/v",
-                 "BuildLabEx"], 
-               capture_output=True,
-               text=True)
-print(output.stdout)
+updater = tkinter.messagebox.askyesno("SkinToPFP Updater","A *NEW* Version Of *Skin To PFP* MIGHT Be Available!!!\nDo You Want Me To Check For A New Update?")
+if updater == True:
+    os.mkdir("TempFiles")
+    newexe = requests.get("https://github.com/Spelis123/SkinToPFP/blob/main/SkinStealer.exe?raw=true")
+    oldexe = open("SkinStealer.exe", "rb")
+    if not oldexe == newexe.content:
+        messagebox.showinfo("hi","hi")
 
 checkifcachefolderexist = os.path.exists("./Cache")
 if checkifcachefolderexist == False:
@@ -85,9 +83,11 @@ def frameMapped(event=None):
 def StartMove(event):
     window.x = event.x
     window.y = event.y
+    titlebartext.config(bg="#9eb8d1")
 def StopMove(event):
     window.x = None
     window.y = None
+    titlebartext.config(bg=tbcolor)
 def OnMotion(event):
     deltax = event.x - window.x
     deltay = event.y - window.y
@@ -97,37 +97,33 @@ def OnMotion(event):
 def openlist():
     if not online.get() == "":
         webbrowser.open("https://namemc.com/profile/" + online.get())
-def skindexid():
-    webbrowser.open("https://www.minecraftskins.com/skin/" + online2.get() + "/e/") 
 def dllinklol():
-    if tOD.get() == "The Skindex":
-        skindexid()
-    else:
+    if online2.get() in "https://":
         skinimage = requests.get(online2.get())
-        file = open("skinout.png", "wb")
-        file.write(skinimage.content)
-        if previewcheck.get() == 1:
-            os.startfile("skinout.png")
+        file = open("Cache/Skins/TempSkin.png", "wb")
+        file.write(skinimage)
         file.close()
-        file2 = open("Cache/Skins/SkinFromLink" + ".png", "wb")
-        file2.write(skinimage.content)
+        file2 = open("Cache/Skins/SkinFromLink.png", "wb")
+        file2.write(skinimage)
         file2.close()
-    messagebox.showinfo("Saved!","Skin Saved!")
+        messagebox.showinfo("Saved!","Skin Saved!")
+    else:
+        messagebox.showerror("Invalid Link :/","Image Didn't Download.\nBad Link Error. Please Use HTTPS Protocol")
 def uploadfrompc():
     localskinimage = askopenfilename(title="Select Skin:",filetypes=[('Image Files', '*.png')])
     file = open(localskinimage, "rb")
     contentlol = file.read()
-    cachelol = open("skinout.png", "wb")
+    cachelol = open("Cache/Skins/TempSkin.png", "wb")
     cachelol.write(contentlol)
     file.close()
     messagebox.showinfo("Saved!","PFP Saved!")
 def downloadfromweb():
     global skinimage,outputskin
     skinimage = requests.get("https://minecraft.tools/download-skin/" + online.get())
-    file = open("skinout.png", "wb")
+    file = open("Cache/Skins/TempSkin.png", "wb")
     file.write(skinimage.content)
     if previewcheck.get() == 1:
-        os.startfile("skinout.png")
+        os.startfile("Cache/Skins/TempSkin.png")
     file.close()
     file2 = open("Cache/Skins/" + online.get() + ".png", "wb")
     file2.write(skinimage.content)
@@ -137,18 +133,18 @@ def downloadfromweb():
 #def croptheimage():
     #    head1 = outputskin.crop(5,8,15,15)
 class WebImage:
-    def __init__(self, url, resize=False, sizex=0, sizey=0):
+    def __init__(self, url,size=1):
         with urllib.request.urlopen(url) as u:
             raw_data = u.read()
         image = Image.open(io.BytesIO(raw_data))
-        if resize == True:
-            image2 = image.resize((sizex,sizey))
-            self.image = ImageTk.PhotoImage(image2)
-        else:
-            self.image = ImageTk.PhotoImage(image)
-
+        sizex, sizey = image.size
+        sizex = round(sizex / size)
+        sizey = round(sizey / size)
+        image2 = image.resize((sizex,sizey))
+        self.image = ImageTk.PhotoImage(image2)
     def get(self):
         return self.image
+
 window.title("Skin Stealer")
 window.geometry("342x232+100+100")
 window.attributes("-transparentcolor","purple")
@@ -165,15 +161,15 @@ nm = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets
 settingsimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/settings.png").get()
 helpimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/help.png").get()
 backimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/back.png").get()
-pmc = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/downloadpmcskin.png",True,172,111).get()
-logoicon = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/icon.png",True,28,30).get()
+pmc = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/downloadpmcskin.png",2.65).get()
+logoicon = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/icon.png",6).get()
 
 def switchToSettings():
-    titlebartext.config(text="Settings")
+    titlebartext.config(text=window.wm_title() + " - Settings")
     mainframe.config(width=0)
     settingsframe.config(width=330)
-def switchToHow():
-    titlebartext.config(text="How To Use?")
+def switchToHow(): 
+    titlebartext.config(text=window.wm_title() + " - How To Use?")
     mainframe.config(width=0)
     howframe.config(width=330)
 def switchToMain():
@@ -187,12 +183,6 @@ backgroundcanvas = tkinter.Label(
     width=342,
     height=232,
 ).place(x=-2,y=-2)
-titlebar = tkinter.Frame(
-    bg="#c6c6c6",
-    width=324,
-    height=40
-)
-titlebar.place(x=10,y=6)
 mainframe = tkinter.Frame(bg="#c6c6c6",width=330,height=185)
 mainframe.place(x=6,y=39)
 settingsframe = tkinter.Frame(bg="#c6c6c6",width=0,height=185) # TODO: set width to 330 when showing
@@ -213,19 +203,25 @@ text2 = tkinter.Label(
     bg="#c6c6c6",
     master=mainframe,
 )
-titlebartext = tkinter.Label(
+tbcolor = "#c6c6c6"
+titlebar = tkinter.Frame(
     bg="#c6c6c6",
+    width=324,
+    height=30
+);titlebar.place(x=10,y=6)
+titlebartext = tkinter.Label(
+    bg=tbcolor,
     text=window.wm_title(),
     font=("Minecraft",15),
     master=titlebar,
     fg="#3F3F3F",
-)
-titlebartext.place(x=32,y=0)
+    width=25,
+);titlebartext.place(x=10,y=0)
 titlebaricon = tkinter.Label(
     image=logoicon,
     master=titlebar,
-    bg="#c6c6c6",
-).place(x=0,y=0)
+    bg=tbcolor,
+)#.place(x=0,y=0)
 infoButton = tkinter.Button(
     image=helpimg,
     bg="#c6c6c6",
@@ -265,7 +261,7 @@ upload = tkinter.Button(
     bg="#c6c6c6"
 )
 online = tkinter.Entry(
-    width=16,
+    width=30,
     bg="Black",
     highlightthickness=1,
     highlightbackground="White",
@@ -274,7 +270,7 @@ online = tkinter.Entry(
     master=mainframe,
 )
 online2 = tkinter.Entry(
-    width=16,
+    width=30,
     bg="Black",
     highlightthickness=1,
     highlightbackground="White",
@@ -283,7 +279,7 @@ online2 = tkinter.Entry(
     master=mainframe,
 )
 offline = tkinter.Entry(
-    width=21,
+    width=25,
     bg="Black",
     highlightthickness=1,
     highlightbackground="White",
@@ -291,11 +287,6 @@ offline = tkinter.Entry(
     fg="white",
     master=mainframe,
 )
-tOD = tkinter.StringVar()
-tOD.set("Link")
-
-tODlol = tkinter.OptionMenu(mainframe, tOD, "The Skindex", "NovaSkin", "Link")
-tODlol.place(x=5,y=150)
 
 howtotabs = tkinter.ttk.Notebook(howframe, height=185,width=330)
 howtotabs.place(x=0,y=0)#185 330
@@ -316,6 +307,12 @@ dlpmcs2 = tkinter.Label(PlanetMC,
     font=("Minecraft",8),
     bg="#c6c6c6",
 ).place(x=176,y=0)
+dlpmcs3 = tkinter.Label(PlanetMC,
+    text="This should also work with any other image.\n(If there is a download button that leads to a link)",
+    font=("Minecraft",8),
+    bg="#c6c6c6",
+    justify=tkinter.LEFT
+).place(x=0,y=115),
 
 backtomainButton2 = tkinter.Button(
     image=backimg,
@@ -382,28 +379,26 @@ SkinlinkTip = tp(online2,"Image Link\n\nEnter The Link To Any Image And I'll Try
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
 PreviewTip = tp(openfilecheckbox,"Open In Image Editor On Download?\n\nWhen Clicking The Download Button I Will\nOpen The Image In Your Default Image Viewer/Editor",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
-LinkTypeTip = tp(tODlol,"Link Type\n\nWhat Type Of Link Is This? Is It Just A Normal Link Or Is It\nSomething Else?\n\nClick The Popup Below And Select A Link Type e.x: Planet Minecraft Skin Link",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
-        fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
 DlLinkTip = tp(download2,"Download (Web)\n\nDownloads Skin From A Link",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
 
 
 text1.place(x=4, y=-1)
 upload.place(x=4, y=25)
-openfilecheckbox.place(x=150,y=150)
+openfilecheckbox.place(x=47,y=150)
 text2.place(x=4, y=56)
 online.place(x=4,y=83)
 online2.place(x=4,y=110)
 offline.place(x=54,y=32)
-showlist.place(x=254,y=83)
-download.place(x=180,y=83)
-download2.place(x=217,y=83)
+showlist.place(x=77,y=145)
+download.place(x=5,y=145)
+download2.place(x=114,y=145)
 
 window.bind("<Control-e>", lambda i : minimizelol())
 window.bind("<Escape>", lambda i : quitlol())
-titlebar.bind("<ButtonPress-1>", StartMove)
-titlebar.bind("<ButtonRelease-1>", StopMove)
-titlebar.bind("<B1-Motion>", OnMotion)
+titlebartext.bind("<ButtonPress-1>", StartMove)
+titlebartext.bind("<ButtonRelease-1>", StopMove)
+titlebartext.bind("<B1-Motion>", OnMotion)
 window.bind("<Map>", frameMapped)
 
 window.mainloop()
