@@ -1,6 +1,10 @@
 @echo off
+echo .
+echo ..
 echo IF PYTHON IS INSTALLED, TYPE quit()
+echo ..
+echo .
 python
-input= Press any key to continue...
-pip install pip
+pip install --upgrade pip
 pip install pyinstaller
+pip install os
