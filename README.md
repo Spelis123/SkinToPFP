@@ -1,5 +1,3 @@
-body{background-color:#101010;color:#fff}
-
 Skin To PFP
 ===========
 
