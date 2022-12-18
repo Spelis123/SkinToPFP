@@ -1,0 +1,15 @@
+pyinstaller
+os
+tktooltip
+pillow
+ctypes
+webbrowser
+urllib
+requests
+time
+base64
+subprocess
+io
+datetime
+winreg
+threading

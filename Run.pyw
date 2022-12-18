@@ -1,3 +1,4 @@
+#---IMPORTS---#
 import tkinter
 from tkinter import filedialog, messagebox
 from ctypes import windll
@@ -5,33 +6,48 @@ import requests, urllib, PIL, webbrowser, os, time, base64, subprocess, tkinter.
 from tkinter.filedialog import askopenfilename
 from PIL import ImageTk, Image
 from tktooltip import ToolTip as tp
+#!--Parameters---#
+
+SkinToPFP_update: bool = False #* Default: True
+SkinToPFP_update_githubrepo: str = "https://github.com/Spelis123/SkinToPFP" #* Default: "https://github.com/Spelis123/SkinToPFP"
+
+window_minimize_and_exit_buttons: bool = False #* Default: False
+tbcolorunfocus = "#aaaaaa" #*can be set to tbcolor or a hex code (Default: "#aaaaaa")
+tbcolormoving = "#0080ff" #* insert your fav color can be i.e "green" or "#0080ff" etc.
+
+#!--CODE (dont mess with unless you know what ur doin. not that much will happen im just warning you)---#
 
 updater = tkinter.Tk()
+updater.title("Skin To PFP Updater")
 
-class WebImage:
+class WebDL:
     def __init__(self, url,size=1,type="PhotoImage"):
-        global filetype
+        global filetype, rdata
         filetype = type
         with urllib.request.urlopen(url) as u:
             raw_data = u.read()
-        image = Image.open(io.BytesIO(raw_data))
-        sizex, sizey = image.size
-        sizex = round(sizex / size)
-        sizey = round(sizey / size)
-        image2 = image.resize((sizex,sizey))
+        if not type == "executable":
+            image = Image.open(io.BytesIO(raw_data))
+            sizex, sizey = image.size
+            sizex = round(sizex / size)
+            sizey = round(sizey / size)
+            image2 = image.resize((sizex,sizey))
         if type == "PhotoImage":
             self.image = ImageTk.PhotoImage(image2)
         if type == "Icon":
             imagef = open("TempFiles\TempWebImg.ico", "wb")
             imagef.write(raw_data)
+        if type == "binary":
+            rdata = io.BytesIO(raw_data)
+            print(rdata)
     def get(self):
         if filetype == "PhotoImage":
             return self.image
         if filetype == "Icon":
             return "TempFiles\TempWebImg.ico"
             imagef.close()
-
-logoicon2 = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/icon.png",1).get()
+        if filetype == "binary":
+            return 
 
 def centerScreen(root, x, y):
     sw = int(root.winfo_screenwidth())
@@ -42,42 +58,49 @@ def centerScreen(root, x, y):
     posh = str(round(sh/2-wh/2))
     root.geometry(str(x) + "x" + str(y) + "+" + posw + "+" + posh)
 
-updater.overrideredirect(1)
-centerScreen(updater, 400, 500)
+def updatefunction():
+    updatestate['value']=25
+    newexe = WebDL(SkinToPFP_update_githubrepo + "/blob/main/dist/SkinStealer.exe?raw=true",type="executable").get()
+    time.sleep(0.5)
+    updatestate['value']=50
+    oldexe = open("dist/SkinStealer.exe", "rb")
+    print(oldexe.read())
+    time.sleep(0.5)
+    updatestate['value']=75
+    if not oldexe == newexe:
+        time.sleep(0.5)
+        updatestate['value']=80
+        updateque = tkinter.messagebox.askyesno("Update","Update Found! Wanna Update?")
+        if updateque == 1:
+            print("YUES")
+            oldexe = open("dist/SkinStealer.exe", "wb")
+            oldexe.write(newexe.read())
+        else:
+            print("NOEEE")
+            updater.destroy()
 
-updAnimCan = tkinter.Canvas(updater,bg="#303030",bd=0,height=500,width=400).place(x=-2,y=-2)
-updlogo = tkinter.Label().place(x=-20,y=-20)
-updlogo2 = tkinter.Label().place(x=-20,y=-20)
-def Animate(root, widget, master, repeatAmount, frameDelay, imgsizex, imgsizey, xp=-200, yp=-200, destroy=False):
-    if xp and yp <= -100:
-        winheight = root.winfo_height()
-        winwidth = root.winfo_width()
-        xp2 = round(winwidth *1.5 + imgsizex / 2)
-        yp2 = round(winheight *1.5 + imgsizey / 2)
-    else:
-        xp2 = xp
-        yp2 = yp
-    for i in range(repeatAmount):
-        xp2 = i
-        yp2 = i * 2
-        widget = tkinter.Label(master,image=logoicon2, width=imgsizex, height=imgsizey,bg="#303030")
-        widget.place(x=xp2,y=yp2)
-        root.after(frameDelay)
-        root.update()
-        widget.forget()
-    if destroy == True:
-        root.destroy()
-Thread1 = threading.Thread(target=Animate(updater, updlogo, updAnimCan, 200, 10, 100, 100,destroy=True))
+
+centerScreen(updater, 250, 50)
+
+style = tkinter.ttk.Style()
+style.configure("TProgressBar", foreground="black", background="black")
+style.map('TProgressBar',
+    foreground=[('pressed', 'blue'),
+    ('active', 'red')])
+
+
+updAnimCan = tkinter.Canvas(updater,bg="#303030",bd=-1,height=10000,width=10000).place(x=-2,y=-2)
+updatestate=tkinter.ttk.Progressbar(updater,orient=tkinter.HORIZONTAL,length=1920,mode='determinate')
+updatestate.pack()
+updatetext = tkinter.Label(text="Updating Your Instance Of SkinToPFP",bg="#303030",fg="#ffffff").pack()
+if SkinToPFP_update == True:
+    updatefunction()
+elif SkinToPFP_update == False:
+    updater.destroy()
 updater.mainloop()
 
 if os.path.exists("./TempFiles") == False:
-    os.mkdir("TempFiles")
-
-if updater == True:
-    newexe = requests.get("https://github.com/Spelis123/SkinToPFP/blob/main/SkinStealer.exe?raw=true")
-    oldexe = open("SkinStealer.exe", "rb")
-    if not oldexe == newexe.content:
-        messagebox.showinfo("hi","hi")
+    os.mkdir("TempFiles")    
 
 checkifcachefolderexist = os.path.exists("./Cache")
 if checkifcachefolderexist == False:
@@ -101,13 +124,17 @@ def set_appwindow(window):
     window.wm_withdraw()
     window.after(10, lambda: window.wm_deiconify())
 
-global window, z#, minimized, window_left_custom
+global window, z, focus#, minimized, window_left_custom
+
+focus = 1
 window = ""
 skinimage = ""
 outputskin = ""
 window = tkinter.Tk()
 window.after(10, lambda: set_appwindow(window))
 window_left_custom = False
+
+
 z = 0
 #minimized = 0
 def boolLeftWindow(setBool):
@@ -149,11 +176,19 @@ def frameMapped(event=None):
 def StartMove(event):
     window.x = event.x
     window.y = event.y
-    titlebartext.config(bg="#ff0000")
+    titlebartext.config(bg=tbcolormoving)
 def StopMove(event):
     window.x = None
     window.y = None
     titlebartext.config(bg=tbcolor)
+def focusnomore(event):
+    focus = 0
+    titlebartext.config(bg=tbcolorunfocus)
+    window.attributes("-alpha",0.5)
+def focusyes(event):
+    focus = 1
+    titlebartext.config(bg=tbcolor)
+    window.attributes("-alpha",1)
 def OnMotion(event):
     deltax = event.x - window.x
     deltay = event.y - window.y
@@ -179,8 +214,10 @@ def uploadfrompc():
     localskinimage = askopenfilename(title="Select Skin:",filetypes=[('Image Files', '*.png')])
     file = open(localskinimage, "rb")
     contentlol = file.read()
-    cachelol = open("Cache/Skins/TempSkin.png", "wb")
+    cachelol = open("Cache/Skins/" + offline.get() + ".png", "wb")
+    cachelol2 = open("Cache/Skins/TempSkin.png", "wb")
     cachelol.write(contentlol)
+    cachelol2.write(contentlol)
     file.close()
     messagebox.showinfo("Saved!","PFP Saved!")
 def downloadfromweb():
@@ -213,21 +250,22 @@ class changeChars:
                 newtext = newtext + text[i]
         print(newtext)
 
-bglol = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/bg.png").get()
-pc = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/pc.png").get()
-dl = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/dl.png").get()
-dllink = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/dllink.png").get()
-opdir = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/openfolder.png").get()
-nm = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/nmsl.png").get()
-settingsimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/settings.png").get()
-helpimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/help.png").get()
-backimg = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/back.png").get()
-pmc = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/downloadpmcskin.png",2.65).get()
-logoicon = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/icon.png",6).get()
-logoico = WebImage("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/icon.ico",1,type="Icon").get()
+bglol = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/bg.png").get()
+bgframe = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/bgmain.png").get()
+pc = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/pc.png").get()
+dl = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/dl.png").get()
+dllink = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/dllink.png").get()
+opdir = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/openfolder.png").get()
+nm = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/nmsl.png").get()
+settingsimg = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/settings.png").get()
+helpimg = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/help.png").get()
+backimg = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/back.png").get()
+pmc = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/downloadpmcskin.png",2.65).get()
+logoicon = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/icon.png",6).get()
+logoico = WebDL("https://raw.githubusercontent.com/Spelis123/SkinToPFP/main/assets/icon.ico",1,type="Icon").get()
 
 window.title("Skin Stealer")
-window.geometry("342x232+100+100")
+window.geometry("470x296+100+100")
 window.attributes("-transparentcolor","purple")
 window.state("iconic")
 window.overrideredirect(1)
@@ -251,11 +289,14 @@ def switchToMain():
     window.update()
 backgroundcanvas = tkinter.Label(
     image=bglol,
-    width=342,
-    height=232,
+    width=470,
+    height=296,
 ).place(x=-2,y=-2)
-mainframe = tkinter.Frame(bg="#c6c6c6",width=330,height=185)
+mainframe = tkinter.Frame(bg="#c6c6c6",width=454,height=188)
 mainframe.place(x=6,y=39)
+
+mainframebg = tkinter.Label(mainframe,image=bgframe,bd=-1).place(x=0,y=0)
+
 settingsframe = tkinter.Frame(bg="#c6c6c6",width=0,height=185) # TODO: set width to 330 when showing
 settingsframe.place(x=6,y=39)
 howframe = tkinter.Frame(bg="#c6c6c6",width=0,height=185) # TODO: set width to 330 when showing
@@ -277,7 +318,7 @@ text2 = tkinter.Label(
 tbcolor = "#c6c6c6"
 titlebar = tkinter.Frame(
     bg="#c6c6c6",
-    width=324,
+    width=450,
     height=30
 );titlebar.place(x=10,y=6)
 titlebartext = tkinter.Label(
@@ -287,7 +328,7 @@ titlebartext = tkinter.Label(
 #    font=("Minecraft",15),
     master=titlebar,
     fg="#3F3F3F",
-    width=320,
+    width=450,
 );titlebartext.place(x=0,y=0)
 titlebaricon = tkinter.Label(
     image=logoicon,
@@ -296,30 +337,28 @@ titlebaricon = tkinter.Label(
 )#.place(x=0,y=0)
 infoButton = tkinter.Button(
     image=helpimg,
-    bg="#c6c6c6",
-    activebackground="#e7e7e7",
-    bd=0,
-    master=mainframe,
+    bg="#555555",
+    activebackground="#454545",
+    bd=-1,
     command=switchToHow,  #messagebox.showinfo("Instructions",'Press the "Ctrl" and "E" key to minimize the application, to unminimize click the taskbar icon.\nTo close the application, simply press the "ESC" key \n\nPlease note that the "upload from pc" button doesnt work.\nTo download a skin or show their skin list type a minecraft username in the textbox above and then press the button to download or show list\n\nThe gear icon leads to the settings menu as you might have guessed, there you can change settings such as: \nenabling or disabling the Cache folder completely, \nhiding the Upload button, \nshowing the Exit and Minimize buttons (disabled and enabled separately) along with the instructions/help/info button where you are now.\n\nClick OK to continue\n\nProgram made by spelis, please do not copy as your own.')
     width=27,
     height=27
 )
-infoButton.place(x=270,y=155)
+infoButton.place(x=401,y=197)
 settingsButton = tkinter.Button(
     image=settingsimg,
-    bg="#c6c6c6",
-    activebackground="#e7e7e7",
-    bd=0,
+    bg="#555555",
+    activebackground="#454545",
+    bd=-1,
     command=switchToSettings,
-    master=mainframe,
     width=27,
     height=27
-).place(x=300,y=155)
+).place(x=431,y=197)
 backtomainButton = tkinter.Button(
     image=backimg,
     bg="#c6c6c6",
     activebackground="#e7e7e7",
-    bd=0,
+    bd=-1,
     command=switchToMain,
     master=settingsframe,
     width=27,
@@ -327,7 +366,7 @@ backtomainButton = tkinter.Button(
 ).place(x=300,y=155)
 upload = tkinter.Button(
     image=pc,
-    bd=0,
+    bd=-1,
     command=uploadfrompc,
     master=mainframe,
     bg="#c6c6c6"
@@ -390,7 +429,7 @@ backtomainButton2 = tkinter.Button(
     image=backimg,
     bg="#c6c6c6",
     activebackground="#e7e7e7",
-    bd=0,
+    bd=-1,
     command=switchToMain,
     master=howframe,
     width=27,
@@ -400,14 +439,14 @@ backtomainButton2.place(x=300,y=155)
 
 download = tkinter.Button(
     image=dl,
-    bd=0,
+    bd=-1,
     command=downloadfromweb,
     master=mainframe,
     bg="#c6c6c6"
 )
 download2 = tkinter.Button(
     image=dllink,
-    bd=0,
+    bd=-1,
     command=dllinklol,
     master=mainframe,
     bg="#c6c6c6"
@@ -416,14 +455,14 @@ current_dir = os.getcwd()
 print(current_dir)
 openfolder = tkinter.Button(
     image=opdir,
-    bd=0,
+    bd=-1,
     command=lambda: subprocess.Popen(f'explorer /open,"{current_dir}\\Cache"'),
     master=mainframe,
     bg="#c6c6c6"
 )
 showlist = tkinter.Button(
     image=nm,
-    bd=0,
+    bd=-1,
     command=openlist,
     master=mainframe,
     bg="#c6c6c6"
@@ -452,7 +491,7 @@ NMCTip = tp(showlist,"NameMC\n\nShow NameMC Profile For This User",delay=-1,pare
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
 UploadTip = tp(upload,"Upload\n\nUpload From PC Using File Explorer",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
-UploadPathTip = tp(offline,"Skin Texture File Path\n\nEnter Path To Skin Texture",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
+NameTip = tp(offline,"Filename\n\nEnter Your Desired Filename For The Skin File",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
 MinecraftUserTip = tp(online,"Minecraft Username\n\nEnter Minecraft Username (Any Valid One) To Download It \nOtherwise It'll Just Give You A Normal Steve Skin.",delay=-1,parent_kwargs={"bg": "#000000", "padx": 2, "pady": 2},
         fg="#ffffff", bg="#1c1c1c", padx=5, pady=5)
@@ -484,5 +523,8 @@ titlebartext.bind("<ButtonPress-1>", StartMove)
 titlebartext.bind("<ButtonRelease-1>", StopMove)
 titlebartext.bind("<B1-Motion>", OnMotion)
 window.bind("<Map>", frameMapped)
+window.bind('<FocusOut>', focusnomore)
+window.bind('<FocusIn>', focusyes)
+window.bind('<Enter>', lambda i : window.attributes('-alpha',0.75) if focus == 0 else None)
 
 window.mainloop()
